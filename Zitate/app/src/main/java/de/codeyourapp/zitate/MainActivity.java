@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -29,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
     private Button button_light;
     private Button button_proximity;
 
+    private SignInButton singInButton;
+    private GoogleSignInClient mGoogleSingInClient;
+    private String TAG = "MainActivity";
+    private FirebaseAuth mAuth;
+    private Button button_singOut;
+    private  int RC_SIGN_IN = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +65,98 @@ public class MainActivity extends AppCompatActivity {
                 openProximityActivity();
             }
         });
+
+        singInButton = findViewById(R.id.button_singIn);
+        // Initialize FireBase authentication
+        mAuth = FirebaseAuth.getInstance();
+
+        button_singOut = findViewById(R.id.button_singOut);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleSingInClient = GoogleSignIn.getClient(this,gso);
+
+        //perform action on button press
+        singInButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view){
+                singIn();
+            }
+        });
+
+        button_singOut.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view){
+                mGoogleSingInClient.signOut();
+                Toast.makeText(MainActivity.this,"You are logged Out",Toast.LENGTH_SHORT).show();
+                button_singOut.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
+
+    private void singIn(){
+        Intent singInIntent = mGoogleSingInClient.getSignInIntent();
+        startActivityForResult(singInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        if(requestCode == RC_SIGN_IN){
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask){
+        try {
+            GoogleSignInAccount acc = completedTask.getResult(ApiException.class);
+            Toast.makeText(MainActivity.this,"SignIn Successful",Toast.LENGTH_SHORT).show();
+            FirebaseGoogleAuth(acc);
+        }catch (ApiException e){
+            Toast.makeText(MainActivity.this,"SignIn Failed",Toast.LENGTH_SHORT).show();
+            FirebaseGoogleAuth(null);
+        }
+
+    }
+
+    private void FirebaseGoogleAuth(GoogleSignInAccount acc){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(acc.getIdToken(),null);
+        mAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(MainActivity.this,"SignIn Successful",Toast.LENGTH_SHORT).show();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    updateUI(user);
+                }else{
+                    Toast.makeText(MainActivity.this,"SignIn Failed",Toast.LENGTH_SHORT).show();
+                    updateUI(null);
+                }
+            }
+        });
+    }
+
+    private void updateUI(FirebaseUser fUser){
+         button_singOut.setVisibility(View.VISIBLE);
+         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+         if(account != null){
+             String personName =  account.getDisplayName();
+             String personGivenName =  account.getGivenName();
+             String personFamilyName =  account.getFamilyName();
+             String personEmail =  account.getEmail();
+             String personId =  account.getId();
+             Uri personPhoto = account.getPhotoUrl();
+
+             Toast.makeText(MainActivity.this,personName + " " + personEmail,Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
 
