@@ -25,6 +25,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     private Button button_accelerometer;
     private Button button_light;
@@ -147,14 +149,21 @@ public class MainActivity extends AppCompatActivity {
          button_singOut.setVisibility(View.VISIBLE);
          GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
          if(account != null){
-             String personName =  account.getDisplayName();
-             String personGivenName =  account.getGivenName();
-             String personFamilyName =  account.getFamilyName();
-             String personEmail =  account.getEmail();
-             String personId =  account.getId();
-             Uri personPhoto = account.getPhotoUrl();
+             String userName =  account.getDisplayName();
+             String userGivenName =  account.getGivenName();
+             String userFamilyName =  account.getFamilyName();
+             String userEmail =  account.getEmail();
+             String userId =  account.getId();
+             String photoURl = account.getPhotoUrl().toString();
 
-             Toast.makeText(MainActivity.this,personName + " " + personEmail,Toast.LENGTH_SHORT).show();
+             ArrayList<String> userData = new ArrayList<String>();
+             userData.add(photoURl);
+             userData.add(userEmail);
+
+             //Toast.makeText(MainActivity.this,personName + " " + personEmail,Toast.LENGTH_SHORT).show();
+             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+             intent.putExtra("userData",userData);
+             startActivity(intent);
         }
     }
 
