@@ -5,6 +5,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -44,25 +47,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Display a notification on the main activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create channel to show notifications.
-            String channelId  = "12456";
-            String channelName = "News";
+            // creates manager and channel
+            NotificationUtils notifyUtil = new NotificationUtils(this);
 
-            NotificationManager notificationManager = (NotificationManager)
-                    getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(new NotificationChannel(channelId,
-                    channelName, NotificationManager.IMPORTANCE_LOW));
+            // the text that the notification shall contain
+            String messageTitle = "Hallo, MobSys Praktikum";
+            String messageBody = "Das ist eine kleine Notification";
 
-            // create a new notification
-            NotificationCompat.Builder notificationBuilder =
-                    new NotificationCompat.Builder(this, channelId)
-                            .setSmallIcon(R.drawable.ic_stat_ic_notification)
-                            .setContentTitle("Ein sehr tatarischer Titel")
-                            .setContentText("Es lebe die goldene Horde")
-                            .setAutoCancel(true);
-            notificationManager.notify(0,notificationBuilder.build());
 
+            // build a notification you want to send to the channel
+            NotificationCompat.Builder notification  = notifyUtil.createChannelNotification(messageTitle,messageBody);
+
+            // .notify() -> actual notification process
+            notifyUtil.getManager().notify(0 , notification.build());
+
+            // send a message to server
+            notifyUtil.sendMessage("Nachricht an den Server");
         }
 
         button_accelerometer = (Button) findViewById(R.id.button_accelerometer);

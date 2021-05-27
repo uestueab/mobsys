@@ -50,6 +50,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
 
+    private NotificationUtils mNotificationUtils;
+
     /**
      * Called when message is received.
      *
@@ -81,6 +83,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+
+            // server sends message with payload
+            String messageFromServer = remoteMessage.getData().get("MessageFromClient");
+            Log.d(TAG, "Received message from server: " + messageFromServer);
+            sendNotification("Message from Server", messageFromServer);
+
             handleNow();
         }
 
@@ -93,7 +101,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(TAG, "Message Notification Title: " + notificationTitle);
             Log.d(TAG, "Message Notification Body: " + notificationBody);
 
-            sendNotification(notificationBody);
+            sendNotification(notificationTitle,notificationBody);
 
         }
 
@@ -123,17 +131,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // FCM registration token to your app server.
         sendRegistrationToServer(token);
     }
-    // [END on_new_token]
 
-    /**
-     * Schedule async work using WorkManager.
-     */
-
-
-
-    /**
-     * Handle time allotted to BroadcastReceivers.
-     */
     private void handleNow() {
         Log.d(TAG, "Short lived task is done.");
     }
@@ -150,58 +148,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // TODO: Implement this method to send token to your app server.
     }
 
-    /**
-     * Create and show a simple notification containing the received FCM message.
-     *
-     * @param messageBody FCM message body received.
-     */
-    public void sendNotification(String messageBody) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+    // Create and show a simple notification containing the received FCM message.
+    public void sendNotification(String messageTitle, String messageBody) {
+        // Calls the helper methods of Class NotificationUtils
+        // create the manager as well as the channels
+        mNotificationUtils = new NotificationUtils(this);
 
-        String channelId = "123456";
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        // create a notification
-        // Send notification to Channel with Id "123456"
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_stat_ic_notification)
-                        .setContentTitle("myContentTitle")
-                        .setContentText(messageBody)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+        NotificationCompat.Builder notification  = mNotificationUtils
+                .createChannelNotification(messageTitle,messageBody);
 
-        // create instance that manages notifications
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // create a the actual notification channel and let it be handled by the manager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "News",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        // Actual Notification process
-        notificationManager.notify(0 , notificationBuilder.build());
+        // .notify() -> Actual Notification process
+        mNotificationUtils.getManager().notify(0 , notification.build());
 
     }
 
-    private void sendMessage(){
-        Random random = new Random();
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
-        String projectId = "325069809843";
-        Log.d(TAG, "Try to send a Message at server: " + projectId);
-        fm.send(new RemoteMessage.Builder(projectId + "@gcm.googleapis.com")
-                .setMessageId(""+random.nextInt())
-                .addData("Your Identifier","Your Message")
-                .addData("Your Next Identifier","Your Next Message")
-                .addData("action","ECHO")
-                .build());
-    }
 
 }
