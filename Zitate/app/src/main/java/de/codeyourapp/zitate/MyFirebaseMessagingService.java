@@ -81,17 +81,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-
-            sendNotification("HelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorld");
-
             handleNow();
-
         }
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Title: " + remoteMessage.getNotification().getTitle());
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+            String notificationTitle = remoteMessage.getNotification().getTitle();
+            String notificationBody = remoteMessage.getNotification().getBody();
+
+            // Log to console first
+            Log.d(TAG, "Message Notification Title: " + notificationTitle);
+            Log.d(TAG, "Message Notification Body: " + notificationBody);
+
+            sendNotification(notificationBody);
+
         }
 
         // Also if you intend on generating your own notifications as a result of a received FCM
@@ -112,6 +115,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onNewToken(String token) {
+        System.out.println("My token: " + token);
         Log.d(TAG, "Refreshed token: " + token);
 
         // If you want to send messages to this application instance or
@@ -157,8 +161,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-        String channelId = "notifyChannel";
+        String channelId = "123456";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        // create a notification
+        // Send notification to Channel with Id "123456"
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_stat_ic_notification)
@@ -168,19 +174,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
 
+        // create instance that manages notifications
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Since android Oreo notification channel is needed.
+        // create a the actual notification channel and let it be handled by the manager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,
-                    "Channel human readable title",
+                    "News",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        // Actual Notification process
+        notificationManager.notify(0 , notificationBuilder.build());
 
+    }
+
+    private void sendMessage(){
         Random random = new Random();
         FirebaseMessaging fm = FirebaseMessaging.getInstance();
         String projectId = "325069809843";
@@ -191,10 +202,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .addData("Your Next Identifier","Your Next Message")
                 .addData("action","ECHO")
                 .build());
-
-
-
-
     }
 
 }

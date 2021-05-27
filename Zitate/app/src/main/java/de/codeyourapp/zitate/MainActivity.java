@@ -3,6 +3,7 @@ package de.codeyourapp.zitate;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -49,6 +50,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create channel to show notifications.
+            String channelId  = "12456";
+            String channelName = "News";
+
+            NotificationManager notificationManager = (NotificationManager)
+                    getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(new NotificationChannel(channelId,
+                    channelName, NotificationManager.IMPORTANCE_LOW));
+
+            // create a new notification
+            NotificationCompat.Builder notificationBuilder =
+                    new NotificationCompat.Builder(this, channelId)
+                            .setSmallIcon(R.drawable.ic_stat_ic_notification)
+                            .setContentTitle("Ein sehr tatarischer Titel")
+                            .setContentText("Es lebe die goldene Horde")
+                            .setAutoCancel(true);
+            notificationManager.notify(0,notificationBuilder.build());
+
+        }
 
         button_accelerometer = (Button) findViewById(R.id.button_accelerometer);
         button_accelerometer.setOnClickListener(new View.OnClickListener() {
@@ -108,13 +130,6 @@ public class MainActivity extends AppCompatActivity {
                 button_singOut.setVisibility(View.INVISIBLE);
             }
         });
-
-        NotificationManager notificationManager =  getSystemService(NotificationManager.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName,
-                    NotificationManager.IMPORTANCE_LOW));
-        }
-
 
     }
 
