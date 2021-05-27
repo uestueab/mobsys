@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.net.Uri;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -25,7 +27,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     private Button button_accelerometer;
@@ -38,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private Button button_singOut;
     private  int RC_SIGN_IN = 9001;
+
+    private String channelId  = "notifyChannel";
+    private String channelName = "customNotifyChannel";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,11 +100,22 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view){
+                FirebaseUser user = mAuth.getCurrentUser();
+                String displayName = user.getDisplayName();
+
                 mGoogleSingInClient.signOut();
-                Toast.makeText(MainActivity.this,"You are logged Out",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Log out: "+ displayName,Toast.LENGTH_SHORT).show();
                 button_singOut.setVisibility(View.INVISIBLE);
             }
         });
+
+        NotificationManager notificationManager =  getSystemService(NotificationManager.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName,
+                    NotificationManager.IMPORTANCE_LOW));
+        }
+
+
     }
 
 
@@ -134,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
-                    Toast.makeText(MainActivity.this,"SignIn Successful",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,"FireBaseAuth Successful",Toast.LENGTH_SHORT).show();
                     FirebaseUser user = mAuth.getCurrentUser();
                     updateUI(user);
                 }else{
@@ -149,20 +166,24 @@ public class MainActivity extends AppCompatActivity {
          button_singOut.setVisibility(View.VISIBLE);
          GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
          if(account != null){
-             String userName =  account.getDisplayName();
+             String photoUrl = account.getPhotoUrl().toString();
+             String userEmail =  account.getEmail();
              String userGivenName =  account.getGivenName();
              String userFamilyName =  account.getFamilyName();
-             String userEmail =  account.getEmail();
+             String userName =  account.getDisplayName();
              String userId =  account.getId();
-             String photoURl = account.getPhotoUrl().toString();
 
-             ArrayList<String> userData = new ArrayList<String>();
-             userData.add(photoURl);
-             userData.add(userEmail);
+             HashMap<String, String> userDataMap = new HashMap<String, String>();
+             userDataMap.put("photoUrl",photoUrl);
+             userDataMap.put("userEmail",userEmail);
+             userDataMap.put("userGivenName",userGivenName);
+             userDataMap.put("userFamilyName",userFamilyName);
+             userDataMap.put("userName",userName);
+             userDataMap.put("userId",userId);
 
              //Toast.makeText(MainActivity.this,personName + " " + personEmail,Toast.LENGTH_SHORT).show();
              Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-             intent.putExtra("userData",userData);
+             intent.putExtra("userDataMap",userDataMap);
              startActivity(intent);
         }
     }

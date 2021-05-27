@@ -15,11 +15,46 @@
         android:layout_height="150dp"/>
 
     <TextView
-        android:id="@+id/profile_textView"
+        android:id="@+id/email_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/colorPrimary"/>
+
+    <TextView
+        android:id="@+id/givenName_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"/>
+
+    <TextView
+        android:id="@+id/familyName_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"/>
+
+    <TextView
+        android:id="@+id/name_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"/>
+
+    <TextView
+        android:id="@+id/userId_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+
+
 
 </LinearLayout>
