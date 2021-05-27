@@ -4,9 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -40,10 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private Button button_singOut;
     private  int RC_SIGN_IN = 9001;
-
-    private String channelId  = "notifyChannel";
-    private String channelName = "customNotifyChannel";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,14 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 button_singOut.setVisibility(View.INVISIBLE);
             }
         });
-
-        NotificationManager notificationManager =  getSystemService(NotificationManager.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName,
-                    NotificationManager.IMPORTANCE_LOW));
-        }
-
-
     }
 
 
